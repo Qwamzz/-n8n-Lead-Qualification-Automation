@@ -1,0 +1,341 @@
+{
+  "name": "Lead Qualification Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-submission",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.full_name}}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{$json.email}}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{$json.budget}}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{$json.interest_level}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "combineOperation": "all"
+      },
+      "id": "validation-check",
+      "name": "Validation Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"Missing required fields\",\n  \"message\": \"Please provide: full_name, email, budget, and interest_level\",\n  \"required_fields\": [\"full_name\", \"email\", \"budget\", \"interest_level\"]\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "validation-error-response",
+      "name": "Validation Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lead Scoring Algorithm\n// Total possible score: 100 points\n\nconst data = $input.all()[0].json;\n\n// Initialize scores\nlet budgetScore = 0;\nlet interestScore = 0;\nlet companySizeScore = 0;\nlet phoneScore = 0;\n\n// Budget Scoring (40% weight)\nconst budget = parseInt(data.budget) || 0;\nif (budget >= 10000) {\n  budgetScore = 40;\n} else if (budget >= 5000) {\n  budgetScore = 25;\n} else if (budget >= 2000) {\n  budgetScore = 15;\n} else if (budget >= 1000) {\n  budgetScore = 5;\n} else {\n  budgetScore = 0;\n}\n\n// Interest Level Scoring (35% weight)\nconst interest = data.interest_level?.toLowerCase() || '';\nswitch (interest) {\n  case 'high':\n    interestScore = 35;\n    break;\n  case 'medium':\n    interestScore = 20;\n    break;\n  case 'low':\n    interestScore = 5;\n    break;\n  default:\n    interestScore = 0;\n}\n\n// Company Size Scoring (15% weight)\nconst companySize = data.company_size?.toLowerCase() || '';\nswitch (companySize) {\n  case 'enterprise':\n  case 'large':\n    companySizeScore = 15;\n    break;\n  case 'medium':\n  case 'mid-size':\n    companySizeScore = 10;\n    break;\n  case 'small':\n  case 'startup':\n    companySizeScore = 5;\n    break;\n  default:\n    companySizeScore = 0;\n}\n\n// Phone Number Bonus (10% weight)\nif (data.phone && data.phone.trim() !== '') {\n  phoneScore = 10;\n}\n\n// Calculate total score\nconst totalScore = budgetScore + interestScore + companySizeScore + phoneScore;\n\n// Determine temperature\nlet temperature = 'Cold';\nif (totalScore >= 70) {\n  temperature = 'Hot';\n} else if (totalScore >= 40) {\n  temperature = 'Warm';\n}\n\n// Create enriched lead data\nconst enrichedLead = {\n  // Original data\n  full_name: data.full_name,\n  email: data.email,\n  phone: data.phone || '',\n  company_size: data.company_size || '',\n  budget: budget,\n  interest_level: data.interest_level,\n  \n  // Calculated values\n  lead_score: totalScore,\n  lead_temperature: temperature,\n  processed_at: new Date().toISOString(),\n  \n  // Score breakdown (for debugging)\n  score_breakdown: {\n    budget_score: budgetScore,\n    interest_score: interestScore,\n    company_size_score: companySizeScore,\n    phone_score: phoneScore\n  }\n};\n\nreturn enrichedLead;"
+      },
+      "id": "lead-scoring",
+      "name": "Lead Scoring Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "sheet",
+        "operation": "appendOrUpdate",
+        "documentId": "YOUR_GOOGLE_SHEETS_ID",
+        "sheetName": "Sheet1",
+        "columnToMatchOn": "B",
+        "valueInputMode": "defineBelow",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "A",
+              "fieldValue": "={{$json.full_name}}"
+            },
+            {
+              "column": "B", 
+              "fieldValue": "={{$json.email}}"
+            },
+            {
+              "column": "C",
+              "fieldValue": "={{$json.phone}}"
+            },
+            {
+              "column": "D",
+              "fieldValue": "={{$json.company_size}}"
+            },
+            {
+              "column": "E",
+              "fieldValue": "={{$json.budget}}"
+            },
+            {
+              "column": "F",
+              "fieldValue": "={{$json.interest_level}}"
+            },
+            {
+              "column": "G",
+              "fieldValue": "={{$json.lead_score}}"
+            },
+            {
+              "column": "H",
+              "fieldValue": "={{$json.lead_temperature}}"
+            },
+            {
+              "column": "I",
+              "fieldValue": "={{$json.processed_at}}"
+            }
+          ]
+        }
+      },
+      "id": "google-sheets-storage",
+      "name": "Google Sheets Storage",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "credentials": {
+        "googleSheetsApi": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.lead_temperature}}",
+              "value2": "Hot"
+            }
+          ]
+        }
+      },
+      "id": "hot-lead-check",
+      "name": "Hot Lead Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "name"
+        },
+        "text": "🔥 *Hot Lead Alert!*\n\n*Name:* {{$json.full_name}}\n*Email:* {{$json.email}}\n{{$json.phone ? '*Phone:* ' + $json.phone + '\\n' : ''}}\n*Company:* {{$json.company_size}}\n*Budget:* £{{$json.budget}}\n*Interest:* {{$json.interest_level}}\n\n📊 *Lead Score:* {{$json.lead_score}}/100\n🌡️ *Temperature:* {{$json.lead_temperature}}\n\n📝 *Action Required:* Follow up within 5 minutes for best conversion rates!\n\n[View Lead in Sheets](https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEETS_ID)",
+        "otherOptions": {}
+      },
+      "id": "slack-notification",
+      "name": "Slack Hot Lead Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1340, 200],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "follow-up-delay",
+      "name": "Follow-up Delay",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1340, 350]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "name"
+        },
+        "text": "⏰ *Follow-up Reminder*\n\nDon't forget to contact *{{$json.full_name}}* ({{$json.email}}) about their £{{$json.budget}} inquiry!\n\n🎯 This was a HOT lead - quick response is crucial for conversion.",
+        "otherOptions": {}
+      },
+      "id": "follow-up-reminder",
+      "name": "Follow-up Reminder",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1560, 350],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Lead processed successfully\",\n  \"lead_data\": {\n    \"name\": \"{{$json.full_name}}\",\n    \"email\": \"{{$json.email}}\",\n    \"score\": {{$json.lead_score}},\n    \"temperature\": \"{{$json.lead_temperature}}\",\n    \"processed_at\": \"{{$json.processed_at}}\"\n  },\n  \"next_steps\": \"{{$json.lead_temperature === 'Hot' ? 'Sales team has been notified via Slack' : 'Lead stored for standard follow-up process'}}\"\n}",
+        "options": {}
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validation Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation Check": {
+      "main": [
+        [
+          {
+            "node": "Lead Scoring Engine",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validation Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Scoring Engine": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Storage": {
+      "main": [
+        [
+          {
+            "node": "Hot Lead Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hot Lead Check": {
+      "main": [
+        [
+          {
+            "node": "Slack Hot Lead Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Follow-up Delay",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-up Delay": {
+      "main": [
+        [
+          {
+            "node": "Follow-up Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-up Reminder": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Hot Lead Alert": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "timezone": "Europe/London"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "lead-qualification-workflow",
+  "tags": []
+}
