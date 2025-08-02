@@ -1,0 +1,393 @@
+{
+  "test_scenarios": {
+    "hot_leads": [
+      {
+        "description": "Perfect Hot Lead - Enterprise with High Budget & Interest",
+        "expected_score": 100,
+        "expected_temperature": "Hot",
+        "payload": {
+          "full_name": "John Smith",
+          "email": "john.smith@enterprise-corp.com",
+          "phone": "+44 7123 456789",
+          "company_size": "enterprise",
+          "budget": "15000",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Hot Lead - Large Company, High Interest, Good Budget",
+        "expected_score": 90,
+        "expected_temperature": "Hot",
+        "payload": {
+          "full_name": "Sarah Williams",
+          "email": "sarah.williams@bigcorp.co.uk",
+          "phone": "+44 20 7946 0958",
+          "company_size": "large",
+          "budget": "12000",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Hot Lead - Medium Company, High Interest, Premium Budget",
+        "expected_score": 85,
+        "expected_temperature": "Hot",
+        "payload": {
+          "full_name": "Michael Johnson",
+          "email": "m.johnson@mediumtech.com",
+          "phone": "+44 161 496 0345",
+          "company_size": "medium",
+          "budget": "18000",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Hot Lead - High Budget overcomes Small Company Size",
+        "expected_score": 80,
+        "expected_temperature": "Hot",
+        "payload": {
+          "full_name": "Emma Davis",
+          "email": "emma@richstartup.com",
+          "phone": "+44 131 496 0123",
+          "company_size": "startup",
+          "budget": "20000",
+          "interest_level": "high"
+        }
+      }
+    ],
+    "warm_leads": [
+      {
+        "description": "Warm Lead - Medium Company, Medium Interest & Budget",
+        "expected_score": 45,
+        "expected_temperature": "Warm",
+        "payload": {
+          "full_name": "David Thompson",
+          "email": "david@mediumcompany.com",
+          "company_size": "medium",
+          "budget": "3000",
+          "interest_level": "medium"
+        }
+      },
+      {
+        "description": "Warm Lead - Large Company, Low Interest, High Budget",
+        "expected_score": 60,
+        "expected_temperature": "Warm",
+        "payload": {
+          "full_name": "Lisa Anderson",
+          "email": "lisa@largecorp.com",
+          "phone": "+44 20 8946 0567",
+          "company_size": "large",
+          "budget": "8000",
+          "interest_level": "low"
+        }
+      },
+      {
+        "description": "Warm Lead - Enterprise, Low Interest, Medium Budget",
+        "expected_score": 45,
+        "expected_temperature": "Warm",
+        "payload": {
+          "full_name": "Robert Wilson",
+          "email": "r.wilson@enterprise.org",
+          "phone": "+44 114 496 0234",
+          "company_size": "enterprise", 
+          "budget": "4000",
+          "interest_level": "low"
+        }
+      },
+      {
+        "description": "Warm Lead - Small Company, High Interest, Low Budget",
+        "expected_score": 50,
+        "expected_temperature": "Warm",
+        "payload": {
+          "full_name": "Jennifer Brown",
+          "email": "jen@smallbiz.co.uk",
+          "phone": "+44 113 496 0345",
+          "company_size": "small",
+          "budget": "1500",
+          "interest_level": "high"
+        }
+      }
+    ],
+    "cold_leads": [
+      {
+        "description": "Cold Lead - Startup, Low Budget & Interest",
+        "expected_score": 10,
+        "expected_temperature": "Cold",
+        "payload": {
+          "full_name": "Mike Wilson",
+          "email": "mike@tinystartup.com",
+          "company_size": "startup",
+          "budget": "500",
+          "interest_level": "low"
+        }
+      },
+      {
+        "description": "Cold Lead - Small Company, Low Budget & Interest",
+        "expected_score": 10,
+        "expected_temperature": "Cold",
+        "payload": {
+          "full_name": "Anna Taylor",
+          "email": "anna@smallshop.com",
+          "company_size": "small",
+          "budget": "800",
+          "interest_level": "low"
+        }
+      },
+      {
+        "description": "Cold Lead - Medium Company, Very Low Budget, Medium Interest",
+        "expected_score": 30,
+        "expected_temperature": "Cold",
+        "payload": {
+          "full_name": "Chris Martin",
+          "email": "chris@mediumfirm.com",
+          "phone": "+44 117 496 0456",
+          "company_size": "medium",
+          "budget": "600",
+          "interest_level": "medium"
+        }
+      }
+    ],
+    "edge_cases": [
+      {
+        "description": "Minimum Required Fields Only",
+        "expected_score": 20,
+        "expected_temperature": "Cold",
+        "payload": {
+          "full_name": "Test User",
+          "email": "test@example.com",
+          "budget": "2000",
+          "interest_level": "medium"
+        }
+      },
+      {
+        "description": "Maximum Score Threshold Test",
+        "expected_score": 70,
+        "expected_temperature": "Hot",
+        "payload": {
+          "full_name": "Threshold Tester",
+          "email": "threshold@test.com",
+          "phone": "+44 20 1234 5678",
+          "company_size": "medium",
+          "budget": "10000",
+          "interest_level": "medium"
+        }
+      },
+      {
+        "description": "Warm/Hot Boundary Test (69 points)",
+        "expected_score": 69,
+        "expected_temperature": "Warm",
+        "payload": {
+          "full_name": "Boundary Test",
+          "email": "boundary@test.com",
+          "company_size": "small",
+          "budget": "9999",
+          "interest_level": "medium"
+        }
+      }
+    ],
+    "validation_errors": [
+      {
+        "description": "Missing Required Field - full_name",
+        "expected_error": "Missing required field: full_name",
+        "payload": {
+          "email": "test@example.com",
+          "budget": "5000",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Missing Required Field - email",
+        "expected_error": "Missing required field: email",
+        "payload": {
+          "full_name": "John Doe",
+          "budget": "5000",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Missing Required Field - budget",
+        "expected_error": "Missing required field: budget",
+        "payload": {
+          "full_name": "John Doe",
+          "email": "john@example.com",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Missing Required Field - interest_level",
+        "expected_error": "Missing required field: interest_level",
+        "payload": {
+          "full_name": "John Doe",
+          "email": "john@example.com",
+          "budget": "5000"
+        }
+      },
+      {
+        "description": "Invalid Email Format",
+        "expected_error": "Invalid email format",
+        "payload": {
+          "full_name": "John Doe",
+          "email": "invalid-email",
+          "budget": "5000",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Invalid Budget (Negative)",
+        "expected_error": "Budget must be a positive number",
+        "payload": {
+          "full_name": "John Doe",
+          "email": "john@example.com",
+          "budget": "-1000",
+          "interest_level": "high"
+        }
+      },
+      {
+        "description": "Invalid Interest Level",
+        "expected_error": "Interest level must be: low, medium, or high",
+        "payload": {
+          "full_name": "John Doe",
+          "email": "john@example.com",
+          "budget": "5000",
+          "interest_level": "extreme"
+        }
+      }
+    ]
+  },
+  "curl_examples": {
+    "hot_lead_test": {
+      "description": "Test a hot lead that should trigger Slack notification",
+      "command": "curl -X POST [YOUR_WEBHOOK_URL] -H \"Content-Type: application/json\" -d '{\"full_name\": \"John Smith\", \"email\": \"john@enterprise-corp.com\", \"phone\": \"+44 7123 456789\", \"company_size\": \"enterprise\", \"budget\": \"15000\", \"interest_level\": \"high\"}'"
+    },
+    "warm_lead_test": {
+      "description": "Test a warm lead that should NOT trigger Slack notification",
+      "command": "curl -X POST [YOUR_WEBHOOK_URL] -H \"Content-Type: application/json\" -d '{\"full_name\": \"Sarah Johnson\", \"email\": \"sarah@medium-biz.com\", \"company_size\": \"medium\", \"budget\": \"3000\", \"interest_level\": \"medium\"}'"
+    },
+    "cold_lead_test": {
+      "description": "Test a cold lead with minimal scoring",
+      "command": "curl -X POST [YOUR_WEBHOOK_URL] -H \"Content-Type: application/json\" -d '{\"full_name\": \"Mike Wilson\", \"email\": \"mike@startup.com\", \"company_size\": \"startup\", \"budget\": \"500\", \"interest_level\": \"low\"}'"
+    },
+    "validation_error_test": {
+      "description": "Test validation by sending incomplete data",
+      "command": "curl -X POST [YOUR_WEBHOOK_URL] -H \"Content-Type: application/json\" -d '{\"email\": \"test@example.com\", \"budget\": \"5000\"}'"
+    }
+  },
+  "automated_test_script": {
+    "description": "Python script to run all test scenarios",
+    "filename": "test_workflow.py",
+    "script": "#!/usr/bin/env python3\nimport requests\nimport json\nimport time\n\n# Replace with your actual webhook URL\nWEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL'\n\ndef test_lead(test_name, payload, expected_score=None, expected_temp=None):\n    print(f'\\n🧪 Testing: {test_name}')\n    print(f'Expected Score: {expected_score}, Expected Temperature: {expected_temp}')\n    \n    try:\n        response = requests.post(WEBHOOK_URL, json=payload, timeout=30)\n        \n        if response.status_code == 200:\n            result = response.json()\n            print(f'✅ Success: Score {result.get(\"lead_score\")}, Temperature: {result.get(\"lead_temperature\")}')\n            return True\n        else:\n            print(f'❌ Failed: {response.status_code} - {response.text}')\n            return False\n            \n    except Exception as e:\n        print(f'❌ Error: {str(e)}')\n        return False\n\ndef run_all_tests():\n    print('🚀 Starting Lead Qualification Workflow Tests')\n    print('=' * 50)\n    \n    # Load test data from this JSON file\n    with open('test-payloads.json', 'r') as f:\n        test_data = json.load(f)\n    \n    results = {'passed': 0, 'failed': 0}\n    \n    # Test Hot Leads\n    print('\\n🔥 HOT LEAD TESTS')\n    for test in test_data['test_scenarios']['hot_leads']:\n        success = test_lead(\n            test['description'],\n            test['payload'],\n            test['expected_score'],\n            test['expected_temperature']\n        )\n        results['passed' if success else 'failed'] += 1\n        time.sleep(2)  # Rate limiting\n    \n    # Test Warm Leads\n    print('\\n🌡️ WARM LEAD TESTS')\n    for test in test_data['test_scenarios']['warm_leads']:\n        success = test_lead(\n            test['description'],\n            test['payload'],\n            test['expected_score'],\n            test['expected_temperature']\n        )\n        results['passed' if success else 'failed'] += 1\n        time.sleep(2)\n    \n    # Test Cold Leads\n    print('\\n❄️ COLD LEAD TESTS')\n    for test in test_data['test_scenarios']['cold_leads']:\n        success = test_lead(\n            test['description'],\n            test['payload'],\n            test['expected_score'],\n            test['expected_temperature']\n        )\n        results['passed' if success else 'failed'] += 1\n        time.sleep(2)\n    \n    # Test Edge Cases\n    print('\\n🎯 EDGE CASE TESTS')\n    for test in test_data['test_scenarios']['edge_cases']:\n        success = test_lead(\n            test['description'],\n            test['payload'],\n            test['expected_score'],\n            test['expected_temperature']\n        )\n        results['passed' if success else 'failed'] += 1\n        time.sleep(2)\n    \n    # Test Validation Errors\n    print('\\n🚨 VALIDATION ERROR TESTS')\n    for test in test_data['test_scenarios']['validation_errors']:\n        print(f'\\n🧪 Testing: {test[\"description\"]}')\n        print(f'Expected Error: {test[\"expected_error\"]}')\n        \n        try:\n            response = requests.post(WEBHOOK_URL, json=test['payload'], timeout=30)\n            \n            if response.status_code == 400:\n                print(f'✅ Validation Error Caught: {response.text}')\n                results['passed'] += 1\n            else:\n                print(f'❌ Expected validation error but got: {response.status_code}')\n                results['failed'] += 1\n                \n        except Exception as e:\n            print(f'❌ Error: {str(e)}')\n            results['failed'] += 1\n            \n        time.sleep(2)\n    \n    # Print Results\n    print('\\n' + '=' * 50)\n    print('📊 TEST RESULTS SUMMARY')\n    print('=' * 50)\n    print(f'✅ Passed: {results[\"passed\"]}')\n    print(f'❌ Failed: {results[\"failed\"]}')\n    print(f'📈 Success Rate: {(results[\"passed\"] / (results[\"passed\"] + results[\"failed\"])) * 100:.1f}%')\n    \n    if results['failed'] == 0:\n        print('\\n🎉 All tests passed! Your workflow is working perfectly.')\n    else:\n        print(f'\\n⚠️ {results[\"failed\"]} tests failed. Check your workflow configuration.')\n\nif __name__ == '__main__':\n    # Update the webhook URL before running\n    if WEBHOOK_URL == 'YOUR_N8N_WEBHOOK_URL':\n        print('❌ Please update WEBHOOK_URL in the script before running tests')\n        exit(1)\n    \n    run_all_tests()"
+  },
+  "usage_instructions": {
+    "setup": [
+      "1. Save this JSON as 'test-payloads.json'",
+      "2. Save the Python script as 'test_workflow.py'",
+      "3. Update WEBHOOK_URL in the Python script",
+      "4. Install requests: pip install requests",
+      "5. Run: python3 test_workflow.py"
+    ],
+    "manual_testing": [
+      "1. Copy any payload from the test scenarios",
+      "2. Use curl command with your webhook URL",
+      "3. Check n8n execution log for processing",
+      "4. Verify data appears in Google Sheets",
+      "5. For hot leads, check Slack notifications"
+    ]
+  },
+  "postman_collection": {
+    "description": "Import this into Postman for GUI testing",
+    "collection": {
+      "info": {
+        "name": "n8n Lead Qualification Tests",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+      },
+      "variable": [
+        {
+          "key": "webhook_url",
+          "value": "YOUR_N8N_WEBHOOK_URL",
+          "type": "string"
+        }
+      ],
+      "item": [
+        {
+          "name": "Hot Lead Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Smith\",\n  \"email\": \"john@enterprise-corp.com\",\n  \"phone\": \"+44 7123 456789\",\n  \"company_size\": \"enterprise\",\n  \"budget\": \"15000\",\n  \"interest_level\": \"high\"\n}"
+            },
+            "url": {
+              "raw": "{{webhook_url}}",
+              "host": ["{{webhook_url}}"]
+            }
+          }
+        },
+        {
+          "name": "Warm Lead Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Sarah Johnson\",\n  \"email\": \"sarah@medium-biz.com\",\n  \"company_size\": \"medium\",\n  \"budget\": \"3000\",\n  \"interest_level\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{webhook_url}}",
+              "host": ["{{webhook_url}}"]
+            }
+          }
+        },
+        {
+          "name": "Cold Lead Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Mike Wilson\",\n  \"email\": \"mike@startup.com\",\n  \"company_size\": \"startup\",\n  \"budget\": \"500\",\n  \"interest_level\": \"low\"\n}"
+            },
+            "url": {
+              "raw": "{{webhook_url}}",
+              "host": ["{{webhook_url}}"]
+            }
+          }
+        },
+        {
+          "name": "Validation Error Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"budget\": \"5000\"\n}"
+            },
+            "url": {
+              "raw": "{{webhook_url}}",
+              "host": ["{{webhook_url}}"]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
