@@ -1,6 +1,9 @@
 # n8n-Lead-Qualification-Automation
 Automatically score, route, and manage incoming leads with intelligent notifications
 
+<img width="940" height="245" alt="image" src="https://github.com/user-attachments/assets/0ff18ea7-25a3-4df2-b792-dc11e63293b5" />
+
+
 # 🚀 n8n Lead Qualification Automation
 
 **Automatically score, route, and manage incoming leads with intelligent notifications**
