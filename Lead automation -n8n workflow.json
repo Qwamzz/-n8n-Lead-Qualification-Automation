@@ -1,0 +1,512 @@
+{
+  "name": "REM Waste",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-submission",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "881c17c9-21a4-4edc-9ea2-4c18eaa0d2df",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        112
+      ],
+      "webhookId": "lead-qualification-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "required-fields-check",
+              "leftValue": "={{ $json.full_name && $json.email && $json.budget && $json.interest_level }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            },
+            {
+              "id": "ad400ee7-1687-4f71-b8fb-818f1c144ff7",
+              "leftValue": "={{ $json.body.full_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "334fff57-a293-45d7-97f5-a012cb1e201f",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "aae595d4-c761-42b0-83b7-0c83ff3c7aea",
+              "leftValue": "={{ $json.body.budget }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e93b4c42-6dee-449e-a7fb-d9ff24133ca5",
+              "leftValue": "={{ $json.body.interest_level }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "41baba0f-389a-4e96-ae07-efc9b5dc0b35",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "aeefbad3-1818-4538-91b5-55b649429b61",
+      "name": "Validate Required Fields",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"error\",\n  \"message\": \"Missing required fields: full_name, email, budget, or interest_level\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "6cbb6144-7fd3-4546-8542-10bffa345491",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lead Scoring Logic\nconst lead = $input.first().json;\n\n// Initialize score\nlet score = 0;\nlet scoreLabel = 'Cold';\n\n// Budget scoring (40% weight)\nconst budget = parseInt(lead.budget) || 0;\nif (budget >= 10000) score += 40;\nelse if (budget >= 5000) score += 25;\nelse if (budget >= 2000) score += 15;\nelse if (budget >= 1000) score += 5;\n\n// Interest level scoring (35% weight)\nconst interest = (lead.interest_level || '').toLowerCase();\nif (interest === 'high') score += 35;\nelse if (interest === 'medium') score += 20;\nelse if (interest === 'low') score += 5;\n\n// Company size scoring (15% weight)\nconst companySize = (lead.company_size || '').toLowerCase();\nif (companySize.includes('enterprise') || companySize.includes('large')) score += 15;\nelse if (companySize.includes('medium') || companySize.includes('mid')) score += 10;\nelse if (companySize.includes('small') || companySize.includes('startup')) score += 5;\n\n// Phone provided bonus (10% weight)\nif (lead.phone && lead.phone.trim() !== '') score += 10;\n\n// Determine lead temperature\nif (score >= 70) scoreLabel = 'Hot';\nelse if (score >= 40) scoreLabel = 'Warm';\nelse scoreLabel = 'Cold';\n\n// Return enriched lead data\nreturn {\n  ...lead,\n  lead_score: score,\n  lead_temperature: scoreLabel,\n  processed_at: new Date().toISOString(),\n  budget_formatted: `£${budget.toLocaleString()}`\n};"
+      },
+      "id": "e6e69e84-ad32-43e9-91e0-d686301695c9",
+      "name": "Calculate Lead Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1niWlhHfzfNRsvAChDTxKkGdM1Cc0oxdLcCvf3jNM_tk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1niWlhHfzfNRsvAChDTxKkGdM1Cc0oxdLcCvf3jNM_tk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Size",
+              "displayName": "Company Size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Interest Level",
+              "displayName": "Interest Level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Temperature",
+              "displayName": "Lead Temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Processed At",
+              "displayName": "Processed At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9f72e9f6-ea30-4814-aa25-42785e0101ef",
+      "name": "Store in Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        -448,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8Iw7e5ecbRSMpmAs",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "hot-lead-check",
+              "leftValue": "={{ $json.lead_temperature }}",
+              "rightValue": "Hot",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "592d8a5a-2b7f-45cd-b830-93a046ad5b33",
+      "name": "Check if Hot Lead",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "#sales-alerts"
+        },
+        "text": "🔥 **NEW HOT LEAD ALERT** 🔥",
+        "otherOptions": {}
+      },
+      "id": "da6cb96a-99d0-48c4-ae5e-b37b997b23eb",
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "f666f01a-5c95-4bfb-aa1b-bf5798d48ded",
+      "credentials": {
+        "slackApi": {
+          "id": "OUoqLdMTAgtKpbpn",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "545160ae-38ff-4480-9c15-e34bbdcb6b78",
+      "name": "Wait 2 Minutes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        192
+      ],
+      "webhookId": "0f8b6ff8-6d6c-4bc8-aa0c-056ab38ceb2e"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "#sales-alerts"
+        },
+        "text": "📞 *Follow-up Reminder*\\n\\nDon't forget to reach out to {{ $json.full_name }} ({{ $json.email }}) - they showed high interest with a {{ $json.budget_formatted }} budget!\\n\\n💡 *Suggested approach:* Schedule a discovery call within 24 hours for best conversion rates.",
+        "otherOptions": {}
+      },
+      "id": "ed239929-5c39-47c7-801d-d0fc8dceb60b",
+      "name": "Follow-up Reminder",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        192
+      ],
+      "webhookId": "9c0220bf-78f2-4fbe-a700-00fa57cf35f6",
+      "credentials": {
+        "slackApi": {
+          "id": "OUoqLdMTAgtKpbpn",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Hot lead processed and team notified\",\n  \"lead_temperature\": \"{{ $json.lead_temperature }}\",\n  \"lead_score\": {{ $json.lead_score }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "6fce347d-76af-4c8d-9f62-ad9e4efb822f",
+      "name": "Hot Lead Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Lead processed and stored\",\n  \"lead_temperature\": \"{{ $json.lead_temperature }}\",\n  \"lead_score\": {{ $json.lead_score }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "1d22128d-dec3-489a-9a84-177e9c92e462",
+      "name": "Standard Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        288
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Required Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Required Fields": {
+      "main": [
+        [
+          {
+            "node": "Calculate Lead Score",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Lead Score": {
+      "main": [
+        [
+          {
+            "node": "Store in Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Check if Hot Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Hot Lead": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait 2 Minutes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Standard Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Alert": {
+      "main": [
+        [
+          {
+            "node": "Hot Lead Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Follow-up Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "951103dd-5c96-4adc-b720-c8e5d031079e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5eb8e9e008969c51fa3f01f8e8865571e6590a59fa57a702ba1e7b993cc2f0f1"
+  },
+  "id": "a2dihWx3GUXj1sbD",
+  "tags": [
+    {
+      "createdAt": "2025-07-31T19:46:34.048Z",
+      "updatedAt": "2025-07-31T19:46:34.048Z",
+      "id": "jGM5AUywBPAjgb3x",
+      "name": "Lead Qualification"
+    }
+  ]
+}
